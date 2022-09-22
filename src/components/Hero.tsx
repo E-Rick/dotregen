@@ -1,17 +1,17 @@
-import { Flex, Heading } from '@chakra-ui/react'
+import { Flex, Heading, VStack } from '@chakra-ui/react';
 
 export const Hero = ({ title }: { title: string }) => (
-  <Flex
+  <VStack
     justifyContent="center"
     alignItems="center"
-    height="100vh"
     bgGradient="linear(to-l, heroGradientStart, heroGradientEnd)"
     bgClip="text"
   >
     <Heading fontSize="6vw">{title}</Heading>
-  </Flex>
+    <Heading fontSize='3vw'>The name is your universal username, secure on the blockchain</Heading>
+  </VStack>
 )
 
 Hero.defaultProps = {
-  title: 'with-chakra-ui-typescript',
+  title: 'Regen domain service',
 }
