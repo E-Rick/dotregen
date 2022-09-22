@@ -7,7 +7,7 @@ export const Hero = ({ title }: { title: string }) => (
     bgGradient="linear(to-l, heroGradientStart, heroGradientEnd)"
     bgClip="text"
   >
-    <Heading fontSize="6vw">{title}</Heading>
+    <Heading fontSize="7vw">{title}</Heading>
     <Heading fontSize='3vw'>The name is your universal username, secure on the blockchain</Heading>
   </VStack>
 )

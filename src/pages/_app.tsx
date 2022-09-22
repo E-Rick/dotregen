@@ -1,19 +1,14 @@
-import { ChakraProvider } from '@chakra-ui/react'
-import '../styles/global.css';
-import theme from '../theme'
-import '@rainbow-me/rainbowkit/styles.css';
+import { ChakraProvider } from '@chakra-ui/react';
+import { ConnectKitProvider, getDefaultClient } from "connectkit";
 import type { AppProps } from 'next/app';
-import {
-  RainbowKitProvider,
-  getDefaultWallets,
-  connectorsForWallets,
-  wallet,
-} from '@rainbow-me/rainbowkit';
-import { chain, createClient, configureChains, WagmiConfig } from 'wagmi';
+import { chain, configureChains, createClient, WagmiConfig } from 'wagmi';
 import { alchemyProvider } from 'wagmi/providers/alchemy';
 import { publicProvider } from 'wagmi/providers/public';
+import '../styles/global.css';
+import theme from '../theme';
+import { APP_NAME } from '../utils/constants';
 
-const { chains, provider, webSocketProvider } = configureChains(
+const { chains, provider } = configureChains(
   [
     chain.polygonMumbai,
     ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true'
@@ -26,37 +21,22 @@ const { chains, provider, webSocketProvider } = configureChains(
   ]
 );
 
-const { wallets } = getDefaultWallets({
-  appName: 'Regen Domain Service',
-  chains,
-});
-
-const demoAppInfo = {
-  appName: 'Regen Domain Service',
-};
-
-const connectors = connectorsForWallets([
-  ...wallets,
-  {
-    groupName: 'Other',
-    wallets: [wallet.argent({ chains }), wallet.trust({ chains })],
-  },
-]);
-
-const wagmiClient = createClient({
-  autoConnect: true,
-  connectors,
-  provider,
-  webSocketProvider,
-});
+const client = createClient(
+  getDefaultClient({
+    appName: APP_NAME,
+    chains,
+    provider,
+    autoConnect: true,
+  }),
+);
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <WagmiConfig client={wagmiClient}>
+    <WagmiConfig client={client}>
       <ChakraProvider theme={theme}>
-        <RainbowKitProvider appInfo={demoAppInfo} chains={chains}>
+        <ConnectKitProvider>
           <Component {...pageProps} />
-        </RainbowKitProvider>
+        </ConnectKitProvider>
       </ChakraProvider>
     </WagmiConfig>
   );
