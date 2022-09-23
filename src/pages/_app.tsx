@@ -8,7 +8,7 @@ import '../styles/global.css';
 import theme from '../theme';
 import { APP_NAME } from '../utils/constants';
 
-const { chains, provider } = configureChains(
+const { chains, provider, webSocketProvider } = configureChains(
   [
     chain.polygonMumbai,
     ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true'
@@ -16,7 +16,7 @@ const { chains, provider } = configureChains(
       : []),
   ],
   [
-    alchemyProvider({ apiKey: '_gg7wSSi0KMBsdKnGVfHDueq6xMB9EkC' }),
+    alchemyProvider({ apiKey: process.env.ALCHEMY_KEY }),
     publicProvider(),
   ]
 );

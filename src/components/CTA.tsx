@@ -1,41 +1,45 @@
-import { Link as ChakraLink, Button } from '@chakra-ui/react'
-
-import { Container } from './Container'
-
+import { Link as ChakraLink, Tooltip, Container, IconButton } from '@chakra-ui/react';
+import Image from 'next/image'
 export const CTA = () => (
   <Container
+    display='flex'
     flexDirection="row"
     position="fixed"
     bottom={0}
+    left={0}
     width="full"
-    maxWidth="3xl"
     py={3}
+    zIndex={100}
   >
-    <Button
-      as={ChakraLink}
-      isExternal
-      href="https://twitter.com/0xerick"
-      variant="outline"
-      colorScheme="gray"
-      rounded="button"
-      flexGrow={1}
-      mx={2}
-      width="full"
+    <Tooltip
+      label='Twitter'
     >
-      Twitter
-    </Button>
-    <Button
-      as={ChakraLink}
-      isExternal
-      href="https://github.com/E-Rick/dotregen"
-      variant="solid"
-      colorScheme="gray"
-      rounded="button"
-      flexGrow={3}
-      mx={2}
-      width="full"
-    >
-      View Repo
-    </Button>
+      <IconButton
+        as={ChakraLink}
+        isExternal
+        icon={<Image src='/twitter.svg' width={32} height={32}></Image>}
+        href="https://twitter.com/0xerick"
+        variant="ghost"
+        colorScheme="gray"
+        rounded='full'
+        mx={2}
+        aria-label={'See twitter'}>
+        Twitter
+      </IconButton>
+    </Tooltip>
+    <Tooltip label='View repo'>
+      <IconButton
+        as={ChakraLink}
+        isExternal
+        icon={<Image src='/github.svg' width={32} height={32}></Image>}
+        href="https://github.com/E-Rick/dotregen"
+        variant="ghost"
+        colorScheme="gray"
+        rounded='full'
+        mx={2}
+        aria-label={'Github repo'}    >
+        View Repo
+      </IconButton>
+    </Tooltip>
   </Container>
 )

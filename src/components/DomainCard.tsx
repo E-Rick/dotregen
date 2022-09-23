@@ -22,7 +22,7 @@ const DomainCard = ({ domain, editRecord }) => {
           top='-2'
           right='-2'
           borderRadius='full'
-          onClick={() => editRecord(domain.name)}
+          onClick={() => editRecord(domain.name, domain.record)}
           icon={<EditIcon />}
           aria-label={'edit record'}
         />
