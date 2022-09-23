@@ -1,6 +1,6 @@
 # .Regen Domain Name Service
 
-![Preview Image](https://github.com/0xerick/dotregen/blob/main/regen-preview2.png?raw=true)
+![Preview Image](https://raw.githubusercontent.com/E-Rick/dotregen/main/public/regen-preview2.png)
 
 Built with:
 
