@@ -1,46 +1,94 @@
 import { Stack, InputGroup, Input, InputRightAddon, Button, Text, Box, Flex } from '@chakra-ui/react'
 import { ethers } from 'ethers'
-import React, { useEffect, useState } from 'react'
 import { useAccount, useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi'
-import { CONTRACT_ADDRESS } from '../utils/constants'
-import contractAbi from '../utils/contract-abi.json'
+import { contractConfig, CONTRACT_ADDRESS } from '../utils/constants'
 import FlipCard, { BackCard, FrontCard } from './FlipCard'
 import Image from 'next/image'
-import { contractConfig } from '../pages/index'
+import useHasMounted from '../hooks/useHasMounted'
+import { useDomainContext } from '../context/DomainContext'
+import contractInterface from '../utils/contract-abi.json'
+import { useState } from 'react'
 
 const RegisterForm = () => {
+  const { domain, setDomain, record, setRecord, clearForm } = useDomainContext()
+  const hasMounted = useHasMounted()
   const { isConnected } = useAccount()
-  const [domain, setDomain] = useState('')
-  const [superpower, setSuperpower] = useState('')
-  const [mounted, setMounted] = useState(false)
-  const [show, setShow] = useState(false)
-  useEffect(() => setMounted(true), [])
+  const [loading, setLoading] = useState<boolean>(false)
+  const [minted, setMinted] = useState<boolean>(false)
 
+  // console.log('domain length', domain.length)
   const getPrice = domain.length === 3 ? '0.5' : domain.length === 4 ? '0.3' : '0.1'
   const calculatePrice = ethers.utils.parseEther(getPrice)
 
-  const { config: contractWriteConfig } = usePrepareContractWrite({
+  // Register config
+  const { config: contractWriteConfig, error } = usePrepareContractWrite({
     ...contractConfig,
     functionName: 'register',
+    enabled: false,
     args: [domain, { value: calculatePrice }],
+  })
+
+  // SetRecord config
+  const { config: contractSetRecordConfig } = usePrepareContractWrite({
+    ...contractConfig,
+    functionName: 'setRecord',
+    enabled: false,
+    args: [domain, record],
   })
 
   const {
     data: mintData,
     write: register,
+    writeAsync: registerAsync,
     isLoading: isRegisterLoading,
     isSuccess: isRegisterStarted,
     error: registerError,
   } = useContractWrite(contractWriteConfig)
 
-  const { data: txData, isSuccess: txSuccess, error: txError } = useWaitForTransaction({
+  const {
+    data: recordData,
+    write: updateRecord,
+    writeAsync,
+    isLoading: isUpdateLoading,
+    error: updateError,
+  } = useContractWrite(contractSetRecordConfig)
+
+  const { data: txData, isSuccess: txSuccess, error: txError, isLoading: registerLoading } = useWaitForTransaction({
     hash: mintData?.hash,
+    onSuccess: (data) => {
+      console.log('Domain minted! https://mumbai.polygonscan.com/tx/' + data.transactionHash)
+      updateRecord()
+    },
+    onSettled(data, error) {
+      console.log('Settled', { data, error })
+    },
   })
 
-  /**
-   * Mints the domain name to contract
-   * @returns
-   */
+  const { isSuccess: isRecordUpdated, error: updateTxError, isLoading: txLoading } = useWaitForTransaction({
+    hash: recordData?.hash,
+    onSuccess(data) {
+      // Record update successful
+      console.log('Success', data)
+    },
+    onSettled(data, error) {
+      console.log('Settled', { data, error })
+    },
+  })
+
+  // const mintDomain = async () => {
+  //   const tx = await registerAsync()
+  //   console.log('tx: ', tx)
+  //   const update = await writeAsync()
+  //   console.log('update: ', update)
+  // }
+
+  const isLoading = isRegisterLoading || txLoading || registerLoading || isUpdateLoading || loading
+  const isMinted = txSuccess || minted
+  const txMessage = 'https://mumbai.polygonscan.com/tx/' + txData
+  const waitingForApproval = (isUpdateLoading || isRegisterLoading) && 'Waiting for approval'
+  const updatingRecord = txLoading && 'Updating record...'
+  const registeringDomain = registerLoading && 'Registering domain...'
+
   const mintDomain = async () => {
     // Don't run if the domain is empty
     if (!domain) {
@@ -51,6 +99,7 @@ const RegisterForm = () => {
       alert('Domain must be at least 3 characters long')
       return
     }
+    setLoading(true)
     // Calculate price based on length of domain (change this to match your contract)
     // 3 chars = 0.5 MATIC, 4 chars = 0.3 MATIC, 5 or more = 0.1 MATIC
     const price = domain.length === 3 ? '0.5' : domain.length === 4 ? '0.3' : '0.1'
@@ -60,10 +109,9 @@ const RegisterForm = () => {
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum)
         const signer = provider.getSigner()
-        const contract = new ethers.Contract(CONTRACT_ADDRESS, contractAbi.abi, signer)
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, contractInterface.abi, signer)
 
         console.log('Going to pop wallet now to pay gas...')
-        register()
         let tx = await contract.register(domain, { value: ethers.utils.parseEther(price) })
         // Wait for the transaction to be mined
         const receipt = await tx.wait()
@@ -73,18 +121,18 @@ const RegisterForm = () => {
           console.log('Domain minted! https://mumbai.polygonscan.com/tx/' + tx.hash)
 
           // Set the record for the domain
-          tx = await contract.setRecord(domain, superpower)
+          tx = await contract.setRecord(domain, record)
           await tx.wait()
 
           console.log('Record set! https://mumbai.polygonscan.com/tx/' + tx.hash)
-
+          setMinted(true)
           // Call fetchMints after 2 seconds
-          setTimeout(() => {
-            // fetchMints();
-          }, 2000)
+          // setTimeout(() => {
+          //   fetchMints()
+          // }, 2000)
 
-          setSuperpower('')
-          setDomain('')
+          clearForm()
+          setLoading(false)
         } else {
           alert('Transaction failed! Please try again')
         }
@@ -94,15 +142,10 @@ const RegisterForm = () => {
     }
   }
 
-  const isLoading = isRegisterLoading || isRegisterStarted
-  const isMinted = txSuccess
-  const txMessage = 'https://mumbai.polygonscan.com/tx/' + txData
-
   return (
     <Stack padding='4' spacing='8' py='8' justifyContent='center' mx='auto' maxW='80%'>
       <InputGroup>
         <Input
-          colorScheme='green'
           focusBorderColor='green.200'
           id='domain'
           value={domain}
@@ -113,37 +156,28 @@ const RegisterForm = () => {
       </InputGroup>
       <Input
         placeholder="what's your superpower?"
-        value={superpower}
-        colorScheme='orange'
+        value={record}
         focusBorderColor='orange.200'
-        onChange={(e) => setSuperpower(e.target.value)}
+        onChange={(e) => setRecord(e.target.value)}
       />
-      {mounted && isConnected && (
+      {hasMounted && isConnected && (
         <Button
           disabled={isLoading || !domain}
           colorScheme='green'
-          loadingText={(isRegisterLoading && 'Waiting for approval') || (isRegisterStarted && 'Minting')}
+          loadingText={waitingForApproval || updatingRecord || registeringDomain}
           isLoading={isLoading}
           onClick={() => mintDomain()}
           spinnerPlacement='start'>
-          <Text>
-            {domain.length <= 2
-              ? 'Enter a domain'
-              : domain.length === 3
-              ? 'Mint for 0.5'
-              : domain.length === 4
-              ? 'Mint for 0.3'
-              : 'Mint for 0.1'}
-          </Text>
+          <Text>{domain.length <= 2 ? 'Enter a domain' : `${getPrice} MATIC`}</Text>
         </Button>
       )}
-
+      {/* {isError && <div>Errors: {error.message}</div>} */}
       {registerError && <p style={{ marginTop: 24, color: '#FF6257' }}>Error: {registerError.message}</p>}
       {txError && <p style={{ marginTop: 24, color: '#FF6257' }}>Error: {txError.message}</p>}
 
       <Flex justifyContent='center'>
         <FlipCard>
-          <FrontCard isCardFlipped={show}>
+          <FrontCard isCardFlipped={isMinted}>
             <svg xmlns='http://www.w3.org/2000/svg' width='270' height='270' fill='npnpm ne'>
               <path fill='url(#B)' d='M0 0h270v270H0z' />
               <defs>
