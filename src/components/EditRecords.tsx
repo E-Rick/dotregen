@@ -9,16 +9,20 @@ import {
   Link as ChakraLink,
   Flex,
 } from '@chakra-ui/react'
-import React from 'react'
 import { useContractWrite, usePrepareContractWrite, useWaitForTransaction } from 'wagmi'
-import { contractConfig } from '../pages/index'
 import { useDomainContext } from '../context/DomainContext'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
+import { contractConfig } from '../utils/constants'
+import useDomains from '../hooks/useDomains'
 
 const EditRecords = () => {
   const { domain, record, setRecord, clearForm } = useDomainContext()
-
-  const { config: contractSetRecordConfig } = usePrepareContractWrite({
+  const { refetchDomains } = useDomains()
+  const {
+    config: contractSetRecordConfig,
+    isError,
+    error,
+  } = usePrepareContractWrite({
     ...contractConfig,
     functionName: 'setRecord',
     args: [domain, record],
@@ -39,9 +43,15 @@ const EditRecords = () => {
     hash: recordData?.hash,
     onSuccess(data) {
       console.log('Success', data)
+      // Call fetchMints after 2 seconds
+      setTimeout(() => {
+        refetchDomains()
+      }, 3000)
     },
   })
 
+  // const errorMessage = pluck('message', txError, error, updateError)
+  // const isError = any(txError, error, updateError)
   const isUpdated = txSuccess
   const isLoading = isUpdateLoading || txLoading
   const waitingForApproval = isUpdateLoading && 'Waiting for approval'
@@ -86,9 +96,9 @@ const EditRecords = () => {
           </ChakraLink>
         )}
 
-        {(txError || updateError) && (
+        {(txError || updateError || isError) && (
           <Text color='red.200' overflow='hidden'>
-            Error: {txError?.message} {updateError?.message}
+            Error: {txError?.message} {updateError?.message} {error?.message}
           </Text>
         )}
       </Flex>
