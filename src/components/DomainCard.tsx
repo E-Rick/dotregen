@@ -14,27 +14,29 @@ const DomainCard = ({ domain }: { domain: Domain }) => {
   const showEditButton = isConnected && isDomainOwner
 
   return (
-    <Box className='mint-item' maxW='sm' borderRadius='lg' position='relative'>
-      <ChakraLink isExternal href={`${OPENSEA_ADDRESS}/${domain.id}`}>
-        <Text>
-          {domain.name}
-          {TLD}
-        </Text>
-      </ChakraLink>
-      {showEditButton && (
-        <IconButton
-          position='absolute'
-          variant='ghost'
-          top='-2'
-          right='-2'
-          borderRadius='full'
-          onClick={() => editRecord(domain.name, domain.record)}
-          icon={<EditIcon />}
-          aria-label={`edit ${domain.name} record`}
-        />
-      )}
-      <Text> {domain.record} </Text>
-    </Box>
+    <>
+      <Box className='mint-item' maxW='sm' borderRadius='lg' position='relative'>
+        <ChakraLink isExternal href={`${OPENSEA_ADDRESS}/${domain.id}`}>
+          <Text>
+            {domain.name}
+            {TLD}
+          </Text>
+        </ChakraLink>
+        {showEditButton && (
+          <IconButton
+            position='absolute'
+            variant='ghost'
+            top='-2'
+            right='-2'
+            borderRadius='full'
+            onClick={() => editRecord(domain.name, domain.record)}
+            icon={<EditIcon />}
+            aria-label={`edit ${domain.name} record`}
+          />
+        )}
+        <Text> {domain.record} </Text>
+      </Box>
+    </>
   )
 }
 

@@ -9,8 +9,8 @@ import '../styles/global.css'
 import theme from '../theme'
 import { APP_NAME } from '../utils/constants'
 
-const { chains, provider, webSocketProvider } = configureChains(
-  [chain.polygonMumbai, ...(process.env.NEXT_PUBLIC_ENABLE_TESTNETS === 'true' ? [chain.polygonMumbai] : [])],
+const { chains, provider } = configureChains(
+  [chain.polygonMumbai],
   [alchemyProvider({ apiKey: process.env.ALCHEMY_KEY }), publicProvider()]
 )
 
