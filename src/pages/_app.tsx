@@ -9,9 +9,10 @@ import '../styles/global.css'
 import theme from '../theme'
 import { APP_NAME } from '../utils/constants'
 
+const alchemyId = process.env.NEXT_PUBLIC_ALCHEMY_ID
 const { chains, provider } = configureChains(
   [chain.polygonMumbai],
-  [alchemyProvider({ apiKey: process.env.ALCHEMY_KEY }), publicProvider()]
+  [alchemyProvider({ apiKey: alchemyId }), publicProvider()]
 )
 
 const client = createClient(
