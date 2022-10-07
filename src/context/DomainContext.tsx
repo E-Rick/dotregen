@@ -8,9 +8,11 @@ export type DomainContextProps = {
   domain: string
   record: string
   isUpdatingRecords: boolean
+  isSuccessfulUpdate: boolean
   setDomain: Dispatch<SetStateAction<string>>
   setRecord: Dispatch<SetStateAction<string>>
   setIsUpdatingRecords: Dispatch<SetStateAction<boolean>>
+  setIsSuccessfulUpdate: Dispatch<SetStateAction<boolean>>
   clearForm: () => void
   editRecord: (domain: string, record: string) => void
 }
@@ -27,6 +29,7 @@ export function DomainProvider({ children }: DomainProviderProps) {
   const [domain, setDomain] = useState<string>('')
   const [record, setRecord] = useState<string>('')
   const [isUpdatingRecords, setIsUpdatingRecords] = useState<boolean>(false)
+  const [isSuccessfulUpdate, setIsSuccessfulUpdate] = useState<boolean>(false)
 
   // Clear the form inputs
   const clearForm = () => {
@@ -41,7 +44,18 @@ export function DomainProvider({ children }: DomainProviderProps) {
     setRecord(record)
   }
 
-  const value = { domain, record, setDomain, setRecord, clearForm, isUpdatingRecords, setIsUpdatingRecords, editRecord }
+  const value = {
+    domain,
+    record,
+    setDomain,
+    setRecord,
+    clearForm,
+    isUpdatingRecords,
+    setIsUpdatingRecords,
+    editRecord,
+    isSuccessfulUpdate,
+    setIsSuccessfulUpdate,
+  }
 
   return <DomainContext.Provider value={value}>{children}</DomainContext.Provider>
 }

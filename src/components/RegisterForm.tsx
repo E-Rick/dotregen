@@ -21,7 +21,11 @@ const RegisterForm = () => {
   const calculatePrice = ethers.utils.parseEther(getPrice)
 
   // Register config
-  const { config: contractWriteConfig, error } = usePrepareContractWrite({
+  const {
+    config: contractWriteConfig,
+    error,
+    isError,
+  } = usePrepareContractWrite({
     ...contractConfig,
     functionName: 'register',
     enabled: false,
@@ -53,7 +57,12 @@ const RegisterForm = () => {
     error: updateError,
   } = useContractWrite(contractSetRecordConfig)
 
-  const { data: txData, isSuccess: txSuccess, error: txError, isLoading: registerLoading } = useWaitForTransaction({
+  const {
+    data: txData,
+    isSuccess: txSuccess,
+    error: txError,
+    isLoading: registerLoading,
+  } = useWaitForTransaction({
     hash: mintData?.hash,
     onSuccess: (data) => {
       console.log('Domain minted! https://mumbai.polygonscan.com/tx/' + data.transactionHash)
@@ -64,7 +73,11 @@ const RegisterForm = () => {
     },
   })
 
-  const { isSuccess: isRecordUpdated, error: updateTxError, isLoading: txLoading } = useWaitForTransaction({
+  const {
+    isSuccess: isRecordUpdated,
+    error: updateTxError,
+    isLoading: txLoading,
+  } = useWaitForTransaction({
     hash: recordData?.hash,
     onSuccess(data) {
       // Record update successful
@@ -130,7 +143,6 @@ const RegisterForm = () => {
           // setTimeout(() => {
           //   fetchMints()
           // }, 2000)
-
           clearForm()
           setLoading(false)
         } else {
@@ -138,7 +150,7 @@ const RegisterForm = () => {
         }
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -167,11 +179,12 @@ const RegisterForm = () => {
           loadingText={waitingForApproval || updatingRecord || registeringDomain}
           isLoading={isLoading}
           onClick={() => mintDomain()}
-          spinnerPlacement='start'>
+          spinnerPlacement='start'
+        >
           <Text>{domain.length <= 2 ? 'Enter a domain' : `${getPrice} MATIC`}</Text>
         </Button>
       )}
-      {/* {isError && <div>Errors: {error.message}</div>} */}
+      {isError && <div>Errors: {error.message}</div>}
       {registerError && <p style={{ marginTop: 24, color: '#FF6257' }}>Error: {registerError.message}</p>}
       {txError && <p style={{ marginTop: 24, color: '#FF6257' }}>Error: {txError.message}</p>}
 
@@ -202,7 +215,8 @@ const RegisterForm = () => {
                 fill='#fef6ec'
                 filter='url(#A)'
                 fontFamily='Plus Jakarta Sans,DejaVu Sans,Noto Color Emoji,Apple Color Emoji,sans-serif'
-                fontWeight='bold'>
+                fontWeight='bold'
+              >
                 {`${domain}.regen`}
               </text>
             </svg>

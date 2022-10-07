@@ -13,11 +13,9 @@ import { useContractWrite, usePrepareContractWrite, useWaitForTransaction } from
 import { useDomainContext } from '../context/DomainContext'
 import { ExternalLinkIcon } from '@chakra-ui/icons'
 import { contractConfig } from '../utils/constants'
-import useDomains from '../hooks/useDomains'
 
 const EditRecords = () => {
-  const { domain, record, setRecord, clearForm } = useDomainContext()
-  const { refetchDomains } = useDomains()
+  const { domain, record, setRecord, clearForm, setIsSuccessfulUpdate, isSuccessfulUpdate } = useDomainContext()
   const {
     config: contractSetRecordConfig,
     isError,
@@ -45,7 +43,8 @@ const EditRecords = () => {
       console.log('Success', data)
       // Call fetchMints after 2 seconds
       setTimeout(() => {
-        refetchDomains()
+        setIsSuccessfulUpdate(!isSuccessfulUpdate)
+        // fetchDomains()
       }, 3000)
     },
   })
@@ -78,7 +77,8 @@ const EditRecords = () => {
           isLoading={isLoading}
           spinnerPlacement='start'
           onClick={() => updateRecord()}
-          loadingText={updatingRecord || waitingForApproval}>
+          loadingText={updatingRecord || waitingForApproval}
+        >
           Update record
         </Button>
 
